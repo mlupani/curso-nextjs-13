@@ -1,3 +1,6 @@
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+
 // Admin Dashboard https://tailwindcomponents.com/component/dashboard-12
 import { Sidebar, TopMenu } from '@/components';
 
