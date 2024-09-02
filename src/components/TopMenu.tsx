@@ -1,7 +1,20 @@
+import { cookies } from 'next/headers';
 import { CiSearch, CiMenuBurger, CiChat1, CiBellOn } from 'react-icons/ci';
+import { IoCartOutline } from 'react-icons/io5';
+import CantItems from './CantItems';
+import Link from 'next/link';
 
 
 export const TopMenu = () => {
+
+  const cookieStore = cookies();
+  const cart = JSON.parse(cookieStore.get('shopping-cart')?.value || '{}');
+
+  let totalItems = 0;
+  Object.values(cart).forEach((value: any) => {
+    totalItems += value;
+  });
+
   return (
     <div className="sticky z-10 top-0 h-16 border-b bg-white lg:py-2.5">
 
@@ -27,9 +40,9 @@ export const TopMenu = () => {
           <button className="flex items-center justify-center w-10 h-10 rounded-xl border bg-gray-100 focus:bg-gray-100 active:bg-gray-200">
             <CiChat1 size={25} />
           </button>
-          <button className="flex items-center justify-center w-10 h-10 rounded-xl border bg-gray-100 focus:bg-gray-100 active:bg-gray-200">
-            <CiBellOn size={25} />
-          </button>
+          <Link href="/dashboard/cart">
+            <CantItems totalItems={totalItems} />
+          </Link>
         </div>
       </div>
     </div>
