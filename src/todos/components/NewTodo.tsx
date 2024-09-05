@@ -6,6 +6,8 @@ import { IoTrashOutline } from 'react-icons/io5';
 //import * as todosApi from '@/todos/helpers/todos';
 //import { useRouter } from 'next/navigation';
 import { addTodo, deleteCompleted } from '../actions/todo-actions';
+import { getUserServerSession } from '@/app/auth/actions/auth-actions';
+import { redirect } from 'next/navigation';
 
 
 export const NewTodo = () => {

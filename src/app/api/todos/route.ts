@@ -1,9 +1,16 @@
 
+import { getUserServerSession } from '@/app/auth/actions/auth-actions';
 import prisma from '@/lib/prisma'
+import { get } from 'http';
 import { NextResponse, NextRequest } from 'next/server'
 import * as yup from 'yup';
 
 export async function GET(request: Request) { 
+
+  const user = await getUserServerSession();
+  if(!user) {
+    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+  }
   
   const { searchParams } = new URL(request.url)
   const take = Number( searchParams.get('take') ?? '10');
@@ -18,6 +25,7 @@ export async function GET(request: Request) {
   }
 
   const todos = await prisma.todo.findMany({
+    where: { userId: user.id },
     take: take,
     skip: skip,
   });
@@ -34,10 +42,15 @@ const postSchema = yup.object({
 
 export async function POST(request: Request) { 
 
+  const user = await getUserServerSession();
+  if(!user) {
+    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+  }
+
   try {
     const { complete, description } = await postSchema.validate( await request.json() );
 
-    const todo = await prisma.todo.create({ data: { complete, description } })
+    const todo = await prisma.todo.create({ data: { complete, description, userId: user.id } })
   
     
     return NextResponse.json(todo);
@@ -48,9 +61,14 @@ export async function POST(request: Request) {
 }
 export async function DELETE(request: Request) { 
 
+  const user = await getUserServerSession();
+  if(!user) {
+    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+  }
+
   try {
 
-    await prisma.todo.deleteMany({ where: { complete: true } });
+    await prisma.todo.deleteMany({ where: { complete: true, userId: user.id } });
     return NextResponse.json('Borrados');
     
   } catch (error) {

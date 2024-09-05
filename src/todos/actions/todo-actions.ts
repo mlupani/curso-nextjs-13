@@ -1,7 +1,9 @@
 'use server';
 
+import { getUserServerSession } from "@/app/auth/actions/auth-actions";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 //const sleep = (seconds: number) => new Promise(resolve => setTimeout(resolve, seconds * 1000));
 
@@ -13,9 +15,11 @@ export const toggleTodo = async (id: string, complete: boolean) => {
     return prisma.todo.update({ where: { id }, data: { complete } });
 }
 
-export const addTodo = (description: string) => {
+export const addTodo = async (description: string) => {
     try {
-        const todo = prisma.todo.create({ data: { description } });
+        const user = await getUserServerSession();
+        if(!user) redirect('/');
+        const todo = prisma.todo.create({ data: { description, userId: user.id } });
         revalidatePath('/dashboard/server-todos');
         return todo;
     } catch (error) {
@@ -27,6 +31,8 @@ export const addTodo = (description: string) => {
 }
 
 export const deleteCompleted = async ():Promise<void> => {
-    await prisma.todo.deleteMany({ where: { complete: true } });
+    const user = await getUserServerSession();
+    if(!user) throw new Error('User not found');
+    await prisma.todo.deleteMany({ where: { complete: true, userId: user.id } });
     revalidatePath('/dashboard/server-todos');
 }
